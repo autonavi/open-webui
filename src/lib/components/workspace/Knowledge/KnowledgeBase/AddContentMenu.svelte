@@ -110,6 +110,16 @@
 				<BarsArrowUp strokeWidth="2" />
 				<div class="flex items-center">{$i18n.t('Add text content')}</div>
 			</button>
+
+			<button
+				class="select-none flex gap-2 items-center px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl w-full"
+				on:click={() => {
+					onUpload({ type: 'confluence' });
+				}}
+			>
+				<GlobeAlt strokeWidth="2" />
+				<div class="flex items-center">{$i18n.t('Add confluence workspace')}</div>
+			</button>
 		</div>
 	</div>
 </Dropdown>

@@ -1901,6 +1901,75 @@ async def process_web(
         )
 
 
+class ProcessConfluenceForm(BaseModel):
+    url: str
+    space_key: str
+    collection_name: Optional[str] = None
+
+
+@router.post('/process/confluence')
+async def process_confluence(
+    request: Request,
+    form_data: ProcessConfluenceForm,
+    process: bool = Query(True, description='Whether to process and save the content'),
+    overwrite: bool = Query(True, description='Whether to overwrite existing collection'),
+    user=Depends(get_verified_user),
+):
+    try:
+        from open_webui.retrieval.loaders.confluence import ConfluenceLoader
+
+        loader = ConfluenceLoader(
+            confluence_url=form_data.url,
+            space_key=form_data.space_key,
+            username=request.app.state.config.CONFLUENCE_USERNAME,
+            api_token=request.app.state.config.CONFLUENCE_API_TOKEN,
+        )
+
+        docs = await run_in_threadpool(lambda: list(loader.lazy_load()))
+        content = " ".join([doc.page_content for doc in docs])
+
+        if process:
+            collection_name = form_data.collection_name
+            if not collection_name:
+                collection_name = calculate_sha256_string(f"{form_data.url}-{form_data.space_key}")[:63]
+
+            await run_in_threadpool(
+                save_docs_to_vector_db,
+                request,
+                docs,
+                collection_name,
+                overwrite=overwrite,
+                add=(not overwrite),
+                user=user,
+            )
+
+            return {
+                'status': True,
+                'collection_name': collection_name,
+                'filename': f"Confluence: {form_data.space_key}",
+                'file': {
+                    'data': {
+                        'content': content,
+                    },
+                    'meta': {
+                        'name': f"Confluence Workspace: {form_data.space_key}",
+                        'source': f"{form_data.url}/wiki/spaces/{form_data.space_key}",
+                    },
+                },
+            }
+        else:
+            return {
+                'status': True,
+                'content': content,
+            }
+    except Exception as e:
+        log.exception(e)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ERROR_MESSAGES.DEFAULT(e),
+        )
+
+
 def search_web(request: Request, engine: str, query: str, user=None) -> list[SearchResult]:
     """Search the web using a search engine and return the results as a list of SearchResult objects.
     Will look for a search engine API key in environment variables in the following order:
