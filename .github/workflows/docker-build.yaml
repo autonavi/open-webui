@@ -6,7 +6,7 @@ on:
     branches:
       - dev4wiki
     tags:
-      - synjones2021/webui:v*
+      - v*
 
 env:
   REGISTRY: registry.cn-wulanchabu.aliyuncs.com
@@ -24,7 +24,7 @@ jobs:
           echo "IMAGE_NAME=${IMAGE_NAME,,}" >>${GITHUB_ENV}
           echo "FULL_IMAGE_NAME=${{ env.REGISTRY }}/${IMAGE_NAME,,}" >>${GITHUB_ENV}
         env:
-          IMAGE_NAME: open-webui
+          IMAGE_NAME: synjones2021/webui/open-webui
 
       - name: Prepare
         run: |
