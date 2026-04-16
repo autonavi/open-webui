@@ -24,7 +24,7 @@ jobs:
           echo "IMAGE_NAME=${IMAGE_NAME,,}" >>${GITHUB_ENV}
           echo "FULL_IMAGE_NAME=${{ env.REGISTRY }}/${IMAGE_NAME,,}" >>${GITHUB_ENV}
         env:
-          IMAGE_NAME: synjones2021/webui/open-webui
+          IMAGE_NAME: synjones2021/webui
 
       - name: Prepare
         run: |
@@ -33,9 +33,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Log in to the Aliyun ACR registry
         uses: aliyun/acr-login@v1
         with:
@@ -43,6 +40,11 @@ jobs:
           region-id: cn-wulanchabu
           username: ${{ secrets.ALIYUN_ACR_USERNAME }}
           password: ${{ secrets.ALIYUN_ACR_PASSWORD }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
 
       - name: Extract metadata for Docker images (slim tag)
         id: meta
@@ -69,6 +71,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          provenance: false
           sbom: true
           build-args: |
             BUILD_HASH=${{ github.sha }}
