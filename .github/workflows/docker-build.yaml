@@ -33,6 +33,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+
       - name: Log in to the Aliyun ACR registry
         uses: aliyun/acr-login@v1
         with:
@@ -40,11 +45,6 @@ jobs:
           region-id: cn-wulanchabu
           username: ${{ secrets.ALIYUN_ACR_USERNAME }}
           password: ${{ secrets.ALIYUN_ACR_PASSWORD }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          driver: docker-container
 
       - name: Extract metadata for Docker images (slim tag)
         id: meta
