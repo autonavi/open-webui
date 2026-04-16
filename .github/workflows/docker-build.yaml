@@ -6,10 +6,10 @@ on:
     branches:
       - dev4wiki
     tags:
-      - v*
+      - synjones2021/webui:v*
 
 env:
-  REGISTRY: registry.cn-wulanchabu.aliyuncs.com/synjones2021/webui
+  REGISTRY: registry.cn-wulanchabu.aliyuncs.com
 
 jobs:
   build-slim-image:
