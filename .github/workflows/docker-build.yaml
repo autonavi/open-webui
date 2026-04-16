@@ -24,7 +24,7 @@ jobs:
           echo "IMAGE_NAME=${IMAGE_NAME,,}" >>${GITHUB_ENV}
           echo "FULL_IMAGE_NAME=${{ env.REGISTRY }}/${IMAGE_NAME,,}" >>${GITHUB_ENV}
         env:
-          IMAGE_NAME: synjones2021/webui/open-webui
+          IMAGE_NAME: synjones2021/webui
 
       - name: Prepare
         run: |
@@ -37,9 +37,10 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to the Aliyun ACR registry
-        uses: docker/login-action@v3
+        uses: aliyun/acr-login@v1
         with:
           registry: ${{ env.REGISTRY }}
+          region-id: cn-wulanchabu
           username: ${{ secrets.ALIYUN_ACR_USERNAME }}
           password: ${{ secrets.ALIYUN_ACR_PASSWORD }}
 
