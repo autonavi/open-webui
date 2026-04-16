@@ -477,6 +477,10 @@ async def get_rag_config(request: Request, user=Depends(get_admin_user)):
         'DOCUMENT_INTELLIGENCE_MODEL': request.app.state.config.DOCUMENT_INTELLIGENCE_MODEL,
         'MISTRAL_OCR_API_BASE_URL': request.app.state.config.MISTRAL_OCR_API_BASE_URL,
         'MISTRAL_OCR_API_KEY': request.app.state.config.MISTRAL_OCR_API_KEY,
+        'CONFLUENCE_URL': request.app.state.config.CONFLUENCE_URL,
+        'CONFLUENCE_SPACE_KEY': request.app.state.config.CONFLUENCE_SPACE_KEY,
+        'CONFLUENCE_USERNAME': request.app.state.config.CONFLUENCE_USERNAME,
+        'CONFLUENCE_API_TOKEN': request.app.state.config.CONFLUENCE_API_TOKEN,
         # MinerU settings
         'MINERU_API_MODE': request.app.state.config.MINERU_API_MODE,
         'MINERU_API_URL': request.app.state.config.MINERU_API_URL,
@@ -682,6 +686,10 @@ class ConfigForm(BaseModel):
     DOCUMENT_INTELLIGENCE_MODEL: Optional[str] = None
     MISTRAL_OCR_API_BASE_URL: Optional[str] = None
     MISTRAL_OCR_API_KEY: Optional[str] = None
+    CONFLUENCE_URL: Optional[str] = None
+    CONFLUENCE_SPACE_KEY: Optional[str] = None
+    CONFLUENCE_USERNAME: Optional[str] = None
+    CONFLUENCE_API_TOKEN: Optional[str] = None
 
     # MinerU settings
     MINERU_API_MODE: Optional[str] = None
@@ -881,6 +889,26 @@ async def update_rag_config(request: Request, form_data: ConfigForm, user=Depend
         form_data.MISTRAL_OCR_API_KEY
         if form_data.MISTRAL_OCR_API_KEY is not None
         else request.app.state.config.MISTRAL_OCR_API_KEY
+    )
+    request.app.state.config.CONFLUENCE_URL = (
+        form_data.CONFLUENCE_URL
+        if form_data.CONFLUENCE_URL is not None
+        else request.app.state.config.CONFLUENCE_URL
+    )
+    request.app.state.config.CONFLUENCE_SPACE_KEY = (
+        form_data.CONFLUENCE_SPACE_KEY
+        if form_data.CONFLUENCE_SPACE_KEY is not None
+        else request.app.state.config.CONFLUENCE_SPACE_KEY
+    )
+    request.app.state.config.CONFLUENCE_USERNAME = (
+        form_data.CONFLUENCE_USERNAME
+        if form_data.CONFLUENCE_USERNAME is not None
+        else request.app.state.config.CONFLUENCE_USERNAME
+    )
+    request.app.state.config.CONFLUENCE_API_TOKEN = (
+        form_data.CONFLUENCE_API_TOKEN
+        if form_data.CONFLUENCE_API_TOKEN is not None
+        else request.app.state.config.CONFLUENCE_API_TOKEN
     )
 
     # MinerU settings
@@ -1140,6 +1168,10 @@ async def update_rag_config(request: Request, form_data: ConfigForm, user=Depend
         'DOCUMENT_INTELLIGENCE_MODEL': request.app.state.config.DOCUMENT_INTELLIGENCE_MODEL,
         'MISTRAL_OCR_API_BASE_URL': request.app.state.config.MISTRAL_OCR_API_BASE_URL,
         'MISTRAL_OCR_API_KEY': request.app.state.config.MISTRAL_OCR_API_KEY,
+        'CONFLUENCE_URL': request.app.state.config.CONFLUENCE_URL,
+        'CONFLUENCE_SPACE_KEY': request.app.state.config.CONFLUENCE_SPACE_KEY,
+        'CONFLUENCE_USERNAME': request.app.state.config.CONFLUENCE_USERNAME,
+        'CONFLUENCE_API_TOKEN': request.app.state.config.CONFLUENCE_API_TOKEN,
         # MinerU settings
         'MINERU_API_MODE': request.app.state.config.MINERU_API_MODE,
         'MINERU_API_URL': request.app.state.config.MINERU_API_URL,
@@ -1637,6 +1669,10 @@ def process_file(
                         DOCUMENT_INTELLIGENCE_MODEL=request.app.state.config.DOCUMENT_INTELLIGENCE_MODEL,
                         MISTRAL_OCR_API_BASE_URL=request.app.state.config.MISTRAL_OCR_API_BASE_URL,
                         MISTRAL_OCR_API_KEY=request.app.state.config.MISTRAL_OCR_API_KEY,
+                        CONFLUENCE_URL=request.app.state.config.CONFLUENCE_URL,
+                        CONFLUENCE_SPACE_KEY=request.app.state.config.CONFLUENCE_SPACE_KEY,
+                        CONFLUENCE_USERNAME=request.app.state.config.CONFLUENCE_USERNAME,
+                        CONFLUENCE_API_TOKEN=request.app.state.config.CONFLUENCE_API_TOKEN,
                         MINERU_API_MODE=request.app.state.config.MINERU_API_MODE,
                         MINERU_API_URL=request.app.state.config.MINERU_API_URL,
                         MINERU_API_KEY=request.app.state.config.MINERU_API_KEY,

@@ -2710,6 +2710,30 @@ MISTRAL_OCR_API_KEY = PersistentConfig(
     os.getenv('MISTRAL_OCR_API_KEY', ''),
 )
 
+CONFLUENCE_URL = PersistentConfig(
+    'CONFLUENCE_URL',
+    'rag.confluence_url',
+    os.getenv('CONFLUENCE_URL', ''),
+)
+
+CONFLUENCE_SPACE_KEY = PersistentConfig(
+    'CONFLUENCE_SPACE_KEY',
+    'rag.confluence_space_key',
+    os.getenv('CONFLUENCE_SPACE_KEY', ''),
+)
+
+CONFLUENCE_USERNAME = PersistentConfig(
+    'CONFLUENCE_USERNAME',
+    'rag.confluence_username',
+    os.getenv('CONFLUENCE_USERNAME', ''),
+)
+
+CONFLUENCE_API_TOKEN = PersistentConfig(
+    'CONFLUENCE_API_TOKEN',
+    'rag.confluence_api_token',
+    os.getenv('CONFLUENCE_API_TOKEN', ''),
+)
+
 BYPASS_EMBEDDING_AND_RETRIEVAL = PersistentConfig(
     'BYPASS_EMBEDDING_AND_RETRIEVAL',
     'rag.bypass_embedding_and_retrieval',

@@ -186,6 +186,14 @@
 		}
 
 		if (
+			RAGConfig.CONTENT_EXTRACTION_ENGINE === 'confluence' &&
+			(RAGConfig.CONFLUENCE_URL === '' || RAGConfig.CONFLUENCE_SPACE_KEY === '')
+		) {
+			toast.error($i18n.t('Confluence URL and Space Key required.'));
+			return;
+		}
+
+		if (
 			RAGConfig.CONTENT_EXTRACTION_ENGINE === 'mineru' &&
 			RAGConfig.MINERU_API_MODE === 'cloud' &&
 			RAGConfig.MINERU_API_KEY === ''
@@ -356,6 +364,7 @@
 									<option value="datalab_marker">{$i18n.t('Datalab Marker API')}</option>
 									<option value="document_intelligence">{$i18n.t('Document Intelligence')}</option>
 									<option value="mistral_ocr">{$i18n.t('Mistral OCR')}</option>
+									<option value="confluence">{$i18n.t('Confluence')}</option>
 									<option value="mineru">{$i18n.t('MinerU')}</option>
 								</select>
 							</div>
@@ -656,6 +665,32 @@
 									placeholder={$i18n.t('Enter Mistral API Key')}
 									bind:value={RAGConfig.MISTRAL_OCR_API_KEY}
 								/>
+							</div>
+						{:else if RAGConfig.CONTENT_EXTRACTION_ENGINE === 'confluence'}
+							<div class="my-0.5 flex flex-col gap-2 pr-2">
+								<div class="flex gap-2">
+									<input
+										class="flex-1 w-full text-sm bg-transparent outline-hidden"
+										placeholder={$i18n.t('Enter Confluence URL')}
+										bind:value={RAGConfig.CONFLUENCE_URL}
+									/>
+									<input
+										class="flex-1 w-full text-sm bg-transparent outline-hidden"
+										placeholder={$i18n.t('Enter Space Key')}
+										bind:value={RAGConfig.CONFLUENCE_SPACE_KEY}
+									/>
+								</div>
+								<div class="flex gap-2">
+									<input
+										class="flex-1 w-full text-sm bg-transparent outline-hidden"
+										placeholder={$i18n.t('Enter Username')}
+										bind:value={RAGConfig.CONFLUENCE_USERNAME}
+									/>
+									<SensitiveInput
+										placeholder={$i18n.t('Enter API Token')}
+										bind:value={RAGConfig.CONFLUENCE_API_TOKEN}
+									/>
+								</div>
 							</div>
 						{:else if RAGConfig.CONTENT_EXTRACTION_ENGINE === 'mineru'}
 							<!-- API Mode Selection -->
