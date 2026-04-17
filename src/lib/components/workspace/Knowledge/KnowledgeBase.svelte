@@ -287,10 +287,11 @@
 			try {
 				const res = await processConfluence(localStorage.token, '', fileItem.url, spaceKey, username, apiToken, false).catch((e) => {
 					console.error('Error processing Confluence:', e);
+					toast.error($i18n.t('Confluence sync failed: {{error}}', { error: e }));
 					return null;
 				});
 
-				if (res) {
+				if (res && res.content && res.content.trim() !== '') {
 					const file = createFileFromText(
 						`Confluence-${spaceKey}-${fileItem.url}`.replace(/[^a-z0-9]/gi, '_').toLowerCase().slice(0, 50),
 						res.content
@@ -316,11 +317,12 @@
 							await addFileHandler(uploadedFile.id);
 						}
 					} else {
+						fileItems = fileItems.filter((item) => item.itemId !== fileItem.itemId);
 						toast.error($i18n.t('Failed to upload file.'));
 					}
 				} else {
 					fileItems = fileItems.filter((item) => item.itemId !== fileItem.itemId);
-					toast.error($i18n.t('Failed to process Confluence workspace.'));
+					toast.error($i18n.t('No content retrieved from Confluence. Please check your URL, Space Key, and credentials.'));
 				}
 			} catch (e) {
 				fileItems = fileItems.filter((item) => item.itemId !== fileItem.itemId);

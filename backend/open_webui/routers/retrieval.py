@@ -1904,7 +1904,7 @@ async def process_web(
 class ProcessConfluenceForm(BaseModel):
     url: str
     space_key: str
-    username: str
+    username: Optional[str] = ''
     api_token: str
     collection_name: Optional[str] = None
 
@@ -1925,10 +1925,24 @@ async def process_confluence(
             space_key=form_data.space_key,
             username=form_data.username,
             api_token=form_data.api_token,
+            continue_on_failure=False,
         )
 
         docs = await run_in_threadpool(lambda: list(loader.lazy_load()))
+
+        if not docs:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='No content found in the Confluence workspace. Please check your URL, Space Key, and credentials.',
+            )
+
         content = " ".join([doc.page_content for doc in docs])
+
+        if not content.strip():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='Confluence pages were found but contained no text content.',
+            )
 
         if process:
             collection_name = form_data.collection_name

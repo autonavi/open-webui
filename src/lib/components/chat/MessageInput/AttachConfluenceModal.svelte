@@ -27,8 +27,8 @@
 			return;
 		}
 
-		if (!username.trim() || !apiToken.trim()) {
-			toast.error($i18n.t('Please enter username and API token.'));
+		if (!apiToken.trim()) {
+			toast.error($i18n.t('Please enter an API token or password.'));
 			return;
 		}
 
@@ -115,8 +115,11 @@
 							<label
 								for="confluence-username"
 								class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
-								>{$i18n.t('Username')}</label
-							>
+								>{$i18n.t('Username')}
+								<span class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-600 dark:text-gray-300' : 'text-gray-400'}`}>
+									({$i18n.t('optional, leave empty for PAT auth')})
+								</span>
+							</label>
 						</div>
 
 						<input
@@ -126,7 +129,6 @@
 							bind:value={username}
 							placeholder={'your-email@example.com'}
 							autocomplete="off"
-							required
 						/>
 					</div>
 					<div>

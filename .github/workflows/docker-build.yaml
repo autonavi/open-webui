@@ -24,7 +24,7 @@ jobs:
           echo "IMAGE_NAME=${IMAGE_NAME,,}" >>${GITHUB_ENV}
           echo "FULL_IMAGE_NAME=${{ env.REGISTRY }}/${IMAGE_NAME,,}" >>${GITHUB_ENV}
         env:
-          IMAGE_NAME: synjones2021/webui
+          IMAGE_NAME: synjones2021/webui-frontend
 
       - name: Checkout repository
         uses: actions/checkout@v5
