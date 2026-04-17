@@ -26,9 +26,7 @@ RUN npm ci --force
 
 COPY . .
 ENV APP_BUILD_HASH=${BUILD_HASH}
-RUN npm run build
 
-######## Output stage - minimal image with only build artifacts ########
-FROM alpine:3.20
+CMD ["npm run build"]
 
-WORKDIR /app
+
