@@ -32,11 +32,3 @@ RUN npm run build
 FROM alpine:3.20
 
 WORKDIR /app
-
-# Copy built frontend files
-COPY --from=build /app/build /app/build
-COPY --from=build /app/CHANGELOG.md /app/CHANGELOG.md
-COPY --from=build /app/package.json /app/package.json
-
-# Default command: list build output for verification
-CMD ["ls", "-la", "/app/build"]
