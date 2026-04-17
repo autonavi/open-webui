@@ -264,7 +264,7 @@
 	};
 
 	const uploadConfluence = async (data) => {
-		let { urls, spaceKey } = data;
+		let { urls, spaceKey, username, apiToken } = data;
 		if (!Array.isArray(urls)) {
 			urls = [urls];
 		}
@@ -285,7 +285,7 @@
 
 		for (const fileItem of newFileItems) {
 			try {
-				const res = await processConfluence(localStorage.token, '', fileItem.url, spaceKey, false).catch((e) => {
+				const res = await processConfluence(localStorage.token, '', fileItem.url, spaceKey, username, apiToken, false).catch((e) => {
 					console.error('Error processing Confluence:', e);
 					return null;
 				});

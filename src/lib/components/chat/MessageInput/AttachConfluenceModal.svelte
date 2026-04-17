@@ -12,25 +12,38 @@
 	export let onSubmit: (e) => void;
 
 	let url = '';
-    let spaceKey = '';
+	let spaceKey = '';
+	let username = '';
+	let apiToken = '';
 
 	const submitHandler = () => {
-		let urls = url
-			.split('\n')
-			.map((u) => u.trim())
-			.filter((u) => u !== '');
-
-		urls = [...new Set(urls)];
-
-		if (urls.length === 0) {
+		if (!url.trim()) {
 			toast.error($i18n.t('Please enter a valid URL.'));
 			return;
 		}
 
-		onSubmit({ type: 'confluence', data: { urls, spaceKey } });
+		if (!spaceKey.trim()) {
+			toast.error($i18n.t('Please enter a Space Key.'));
+			return;
+		}
+
+		if (!username.trim() || !apiToken.trim()) {
+			toast.error($i18n.t('Please enter username and API token.'));
+			return;
+		}
+
+		onSubmit({
+			type: 'confluence',
+			data: {
+				urls: [url.trim()],
+				spaceKey: spaceKey.trim(),
+				username: username.trim(),
+				apiToken: apiToken.trim()
+			}
+		});
 		show = false;
 		url = '';
-        spaceKey = '';
+		spaceKey = '';
 	};
 </script>
 
@@ -73,7 +86,7 @@
 							class={`w-full flex-1 text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 							type="text"
 							bind:value={url}
-							placeholder={'https://your-domain.atlassian.net'}
+							placeholder={'http://cwiki.example.com:8099'}
 							autocomplete="off"
 							required
 						/>
@@ -93,6 +106,44 @@
 							type="text"
 							bind:value={spaceKey}
 							placeholder={'SPACE_KEY'}
+							autocomplete="off"
+							required
+						/>
+					</div>
+					<div>
+						<div class="flex justify-between mb-0.5">
+							<label
+								for="confluence-username"
+								class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
+								>{$i18n.t('Username')}</label
+							>
+						</div>
+
+						<input
+							id="confluence-username"
+							class={`w-full flex-1 text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
+							type="text"
+							bind:value={username}
+							placeholder={'your-email@example.com'}
+							autocomplete="off"
+							required
+						/>
+					</div>
+					<div>
+						<div class="flex justify-between mb-0.5">
+							<label
+								for="confluence-token"
+								class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
+								>{$i18n.t('API Token')}</label
+							>
+						</div>
+
+						<input
+							id="confluence-token"
+							class={`w-full flex-1 text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
+							type="password"
+							bind:value={apiToken}
+							placeholder={'••••••••'}
 							autocomplete="off"
 							required
 						/>

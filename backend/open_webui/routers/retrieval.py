@@ -1904,6 +1904,8 @@ async def process_web(
 class ProcessConfluenceForm(BaseModel):
     url: str
     space_key: str
+    username: str
+    api_token: str
     collection_name: Optional[str] = None
 
 
@@ -1921,8 +1923,8 @@ async def process_confluence(
         loader = ConfluenceLoader(
             confluence_url=form_data.url,
             space_key=form_data.space_key,
-            username=request.app.state.config.CONFLUENCE_USERNAME,
-            api_token=request.app.state.config.CONFLUENCE_API_TOKEN,
+            username=form_data.username,
+            api_token=form_data.api_token,
         )
 
         docs = await run_in_threadpool(lambda: list(loader.lazy_load()))

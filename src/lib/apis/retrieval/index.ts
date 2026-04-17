@@ -374,7 +374,9 @@ export const processConfluence = async (
 	token: string,
 	collection_name: string,
 	url: string,
-    space_key: string,
+	space_key: string,
+	username: string,
+	api_token: string,
 	process: boolean = true
 ) => {
 	let error = null;
@@ -394,7 +396,9 @@ export const processConfluence = async (
 		},
 		body: JSON.stringify({
 			url: url,
-            space_key: space_key,
+			space_key: space_key,
+			username: username,
+			api_token: api_token,
 			collection_name: collection_name
 		})
 	})
