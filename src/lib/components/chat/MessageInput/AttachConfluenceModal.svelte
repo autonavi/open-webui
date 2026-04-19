@@ -96,7 +96,7 @@
 							<label
 								for="confluence-space"
 								class={`text-xs ${($settings?.highContrastMode ?? false) ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}`}
-								>{$i18n.t('Space Key')}</label
+								>{$i18n.t('Space Key or Page ID')}</label
 							>
 						</div>
 
@@ -105,7 +105,7 @@
 							class={`w-full flex-1 text-sm bg-transparent ${($settings?.highContrastMode ?? false) ? 'placeholder:text-gray-700 dark:placeholder:text-gray-100' : 'outline-hidden placeholder:text-gray-300 dark:placeholder:text-gray-700'}`}
 							type="text"
 							bind:value={spaceKey}
-							placeholder={'SPACE_KEY'}
+							placeholder={'DEV or 24805383'}
 							autocomplete="off"
 							required
 						/>
