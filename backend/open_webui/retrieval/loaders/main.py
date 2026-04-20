@@ -22,6 +22,7 @@ from open_webui.retrieval.loaders.external_document import ExternalDocumentLoade
 from open_webui.retrieval.loaders.mistral import MistralLoader
 from open_webui.retrieval.loaders.datalab_marker import DatalabMarkerLoader
 from open_webui.retrieval.loaders.mineru import MinerULoader
+from open_webui.retrieval.loaders.confluence import ConfluenceLoader
 
 
 from open_webui.env import GLOBAL_LOG_LEVEL, REQUESTS_VERIFY
@@ -385,6 +386,13 @@ class Loader:
                 base_url=self.kwargs.get('MISTRAL_OCR_API_BASE_URL'),
                 api_key=self.kwargs.get('MISTRAL_OCR_API_KEY'),
                 file_path=file_path,
+            )
+        elif self.engine == 'confluence' and self.kwargs.get('CONFLUENCE_URL'):
+            loader = ConfluenceLoader(
+                confluence_url=self.kwargs.get('CONFLUENCE_URL'),
+                space_key=self.kwargs.get('CONFLUENCE_SPACE_KEY'),
+                username=self.kwargs.get('CONFLUENCE_USERNAME'),
+                api_token=self.kwargs.get('CONFLUENCE_API_TOKEN'),
             )
         else:
             if file_ext == 'pdf':

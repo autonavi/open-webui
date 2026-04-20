@@ -477,6 +477,10 @@ async def get_rag_config(request: Request, user=Depends(get_admin_user)):
         'DOCUMENT_INTELLIGENCE_MODEL': request.app.state.config.DOCUMENT_INTELLIGENCE_MODEL,
         'MISTRAL_OCR_API_BASE_URL': request.app.state.config.MISTRAL_OCR_API_BASE_URL,
         'MISTRAL_OCR_API_KEY': request.app.state.config.MISTRAL_OCR_API_KEY,
+        'CONFLUENCE_URL': request.app.state.config.CONFLUENCE_URL,
+        'CONFLUENCE_SPACE_KEY': request.app.state.config.CONFLUENCE_SPACE_KEY,
+        'CONFLUENCE_USERNAME': request.app.state.config.CONFLUENCE_USERNAME,
+        'CONFLUENCE_API_TOKEN': request.app.state.config.CONFLUENCE_API_TOKEN,
         # MinerU settings
         'MINERU_API_MODE': request.app.state.config.MINERU_API_MODE,
         'MINERU_API_URL': request.app.state.config.MINERU_API_URL,
@@ -682,6 +686,10 @@ class ConfigForm(BaseModel):
     DOCUMENT_INTELLIGENCE_MODEL: Optional[str] = None
     MISTRAL_OCR_API_BASE_URL: Optional[str] = None
     MISTRAL_OCR_API_KEY: Optional[str] = None
+    CONFLUENCE_URL: Optional[str] = None
+    CONFLUENCE_SPACE_KEY: Optional[str] = None
+    CONFLUENCE_USERNAME: Optional[str] = None
+    CONFLUENCE_API_TOKEN: Optional[str] = None
 
     # MinerU settings
     MINERU_API_MODE: Optional[str] = None
@@ -881,6 +889,26 @@ async def update_rag_config(request: Request, form_data: ConfigForm, user=Depend
         form_data.MISTRAL_OCR_API_KEY
         if form_data.MISTRAL_OCR_API_KEY is not None
         else request.app.state.config.MISTRAL_OCR_API_KEY
+    )
+    request.app.state.config.CONFLUENCE_URL = (
+        form_data.CONFLUENCE_URL
+        if form_data.CONFLUENCE_URL is not None
+        else request.app.state.config.CONFLUENCE_URL
+    )
+    request.app.state.config.CONFLUENCE_SPACE_KEY = (
+        form_data.CONFLUENCE_SPACE_KEY
+        if form_data.CONFLUENCE_SPACE_KEY is not None
+        else request.app.state.config.CONFLUENCE_SPACE_KEY
+    )
+    request.app.state.config.CONFLUENCE_USERNAME = (
+        form_data.CONFLUENCE_USERNAME
+        if form_data.CONFLUENCE_USERNAME is not None
+        else request.app.state.config.CONFLUENCE_USERNAME
+    )
+    request.app.state.config.CONFLUENCE_API_TOKEN = (
+        form_data.CONFLUENCE_API_TOKEN
+        if form_data.CONFLUENCE_API_TOKEN is not None
+        else request.app.state.config.CONFLUENCE_API_TOKEN
     )
 
     # MinerU settings
@@ -1140,6 +1168,10 @@ async def update_rag_config(request: Request, form_data: ConfigForm, user=Depend
         'DOCUMENT_INTELLIGENCE_MODEL': request.app.state.config.DOCUMENT_INTELLIGENCE_MODEL,
         'MISTRAL_OCR_API_BASE_URL': request.app.state.config.MISTRAL_OCR_API_BASE_URL,
         'MISTRAL_OCR_API_KEY': request.app.state.config.MISTRAL_OCR_API_KEY,
+        'CONFLUENCE_URL': request.app.state.config.CONFLUENCE_URL,
+        'CONFLUENCE_SPACE_KEY': request.app.state.config.CONFLUENCE_SPACE_KEY,
+        'CONFLUENCE_USERNAME': request.app.state.config.CONFLUENCE_USERNAME,
+        'CONFLUENCE_API_TOKEN': request.app.state.config.CONFLUENCE_API_TOKEN,
         # MinerU settings
         'MINERU_API_MODE': request.app.state.config.MINERU_API_MODE,
         'MINERU_API_URL': request.app.state.config.MINERU_API_URL,
@@ -1637,6 +1669,10 @@ def process_file(
                         DOCUMENT_INTELLIGENCE_MODEL=request.app.state.config.DOCUMENT_INTELLIGENCE_MODEL,
                         MISTRAL_OCR_API_BASE_URL=request.app.state.config.MISTRAL_OCR_API_BASE_URL,
                         MISTRAL_OCR_API_KEY=request.app.state.config.MISTRAL_OCR_API_KEY,
+                        CONFLUENCE_URL=request.app.state.config.CONFLUENCE_URL,
+                        CONFLUENCE_SPACE_KEY=request.app.state.config.CONFLUENCE_SPACE_KEY,
+                        CONFLUENCE_USERNAME=request.app.state.config.CONFLUENCE_USERNAME,
+                        CONFLUENCE_API_TOKEN=request.app.state.config.CONFLUENCE_API_TOKEN,
                         MINERU_API_MODE=request.app.state.config.MINERU_API_MODE,
                         MINERU_API_URL=request.app.state.config.MINERU_API_URL,
                         MINERU_API_KEY=request.app.state.config.MINERU_API_KEY,
@@ -1849,6 +1885,91 @@ async def process_web(
                     'meta': {
                         'name': form_data.url,
                         'source': form_data.url,
+                    },
+                },
+            }
+        else:
+            return {
+                'status': True,
+                'content': content,
+            }
+    except Exception as e:
+        log.exception(e)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ERROR_MESSAGES.DEFAULT(e),
+        )
+
+
+class ProcessConfluenceForm(BaseModel):
+    url: str
+    space_key: str
+    username: Optional[str] = ''
+    api_token: str
+    collection_name: Optional[str] = None
+
+
+@router.post('/process/confluence')
+async def process_confluence(
+    request: Request,
+    form_data: ProcessConfluenceForm,
+    process: bool = Query(True, description='Whether to process and save the content'),
+    overwrite: bool = Query(True, description='Whether to overwrite existing collection'),
+    user=Depends(get_verified_user),
+):
+    try:
+        from open_webui.retrieval.loaders.confluence import ConfluenceLoader
+
+        loader = ConfluenceLoader(
+            confluence_url=form_data.url,
+            space_key=form_data.space_key,
+            username=form_data.username,
+            api_token=form_data.api_token,
+            continue_on_failure=False,
+        )
+
+        docs = await run_in_threadpool(lambda: list(loader.lazy_load()))
+
+        if not docs:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='No content found in the Confluence workspace. Please check your URL, Space Key, and credentials.',
+            )
+
+        content = " ".join([doc.page_content for doc in docs])
+
+        if not content.strip():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='Confluence pages were found but contained no text content.',
+            )
+
+        if process:
+            collection_name = form_data.collection_name
+            if not collection_name:
+                collection_name = calculate_sha256_string(f"{form_data.url}-{form_data.space_key}")[:63]
+
+            await run_in_threadpool(
+                save_docs_to_vector_db,
+                request,
+                docs,
+                collection_name,
+                overwrite=overwrite,
+                add=(not overwrite),
+                user=user,
+            )
+
+            return {
+                'status': True,
+                'collection_name': collection_name,
+                'filename': f"Confluence: {form_data.space_key}",
+                'file': {
+                    'data': {
+                        'content': content,
+                    },
+                    'meta': {
+                        'name': f"Confluence Workspace: {form_data.space_key}",
+                        'source': f"{form_data.url}/wiki/spaces/{form_data.space_key}",
                     },
                 },
             }

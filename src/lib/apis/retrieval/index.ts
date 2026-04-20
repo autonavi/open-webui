@@ -370,6 +370,55 @@ export const processWeb = async (
 	return res;
 };
 
+export const processConfluence = async (
+	token: string,
+	collection_name: string,
+	url: string,
+	space_key: string,
+	username: string,
+	api_token: string,
+	process: boolean = true
+) => {
+	let error = null;
+
+	const searchParams = new URLSearchParams();
+
+	if (!process) {
+		searchParams.append('process', 'false');
+	}
+
+	const res = await fetch(`${RETRIEVAL_API_BASE_URL}/process/confluence?${searchParams.toString()}`, {
+		method: 'POST',
+		headers: {
+			Accept: 'application/json',
+			'Content-Type': 'application/json',
+			authorization: `Bearer ${token}`
+		},
+		body: JSON.stringify({
+			url: url,
+			space_key: space_key,
+			username: username,
+			api_token: api_token,
+			collection_name: collection_name
+		})
+	})
+		.then(async (res) => {
+			if (!res.ok) throw await res.json();
+			return res.json();
+		})
+		.catch((err) => {
+			error = err.detail;
+			console.error(err);
+			return null;
+		});
+
+	if (error) {
+		throw error;
+	}
+
+	return res;
+};
+
 export const processWebSearch = async (
 	token: string,
 	query: string,

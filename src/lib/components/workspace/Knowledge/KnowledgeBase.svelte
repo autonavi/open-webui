@@ -34,7 +34,7 @@
 		updateKnowledgeAccessGrants,
 		searchKnowledgeFilesById
 	} from '$lib/apis/knowledge';
-	import { processWeb, processYoutubeVideo } from '$lib/apis/retrieval';
+	import { processWeb, processYoutubeVideo, processConfluence } from '$lib/apis/retrieval';
 
 	import { blobToFile, isYoutubeUrl } from '$lib/utils';
 
@@ -55,6 +55,7 @@
 	import DropdownOptions from '$lib/components/common/DropdownOptions.svelte';
 	import Pagination from '$lib/components/common/Pagination.svelte';
 	import AttachWebpageModal from '$lib/components/chat/MessageInput/AttachWebpageModal.svelte';
+	import AttachConfluenceModal from '$lib/components/chat/MessageInput/AttachConfluenceModal.svelte';
 
 	let largeScreen = true;
 
@@ -63,6 +64,7 @@
 
 	let showAddWebpageModal = false;
 	let showAddTextContentModal = false;
+	let showAddConfluenceModal = false;
 
 	let showSyncConfirmModal = false;
 	let showAccessControlModal = false;
@@ -255,6 +257,74 @@
 				}
 			} catch (e) {
 				// remove the item from fileItems
+				fileItems = fileItems.filter((item) => item.itemId !== fileItem.itemId);
+				toast.error(`${e}`);
+			}
+		}
+	};
+
+	const uploadConfluence = async (data) => {
+		let { urls, spaceKey, username, apiToken } = data;
+		if (!Array.isArray(urls)) {
+			urls = [urls];
+		}
+
+		const newFileItems = urls.map((url) => ({
+			type: 'file',
+			file: '',
+			id: null,
+			url: url,
+			name: `Confluence: ${spaceKey}`,
+			size: null,
+			status: 'uploading',
+			error: '',
+			itemId: uuidv4()
+		}));
+
+		fileItems = [...newFileItems, ...(fileItems ?? [])];
+
+		for (const fileItem of newFileItems) {
+			try {
+				const res = await processConfluence(localStorage.token, '', fileItem.url, spaceKey, username, apiToken, false).catch((e) => {
+					console.error('Error processing Confluence:', e);
+					toast.error($i18n.t('Confluence sync failed: {{error}}', { error: e }));
+					return null;
+				});
+
+				if (res && res.content && res.content.trim() !== '') {
+					const file = createFileFromText(
+						`Confluence-${spaceKey}-${fileItem.url}`.replace(/[^a-z0-9]/gi, '_').toLowerCase().slice(0, 50),
+						res.content
+					);
+
+					const uploadedFile = await uploadFile(localStorage.token, file).catch((e) => {
+						toast.error(`${e}`);
+						return null;
+					});
+
+					if (uploadedFile) {
+						fileItems = fileItems.map((item) => {
+							if (item.itemId === fileItem.itemId) {
+								item.id = uploadedFile.id;
+							}
+							return item;
+						});
+
+						if (uploadedFile.error) {
+							toast.warning(uploadedFile.error);
+							fileItems = fileItems.filter((file) => file.id !== uploadedFile.id);
+						} else {
+							await addFileHandler(uploadedFile.id);
+						}
+					} else {
+						fileItems = fileItems.filter((item) => item.itemId !== fileItem.itemId);
+						toast.error($i18n.t('Failed to upload file.'));
+					}
+				} else {
+					fileItems = fileItems.filter((item) => item.itemId !== fileItem.itemId);
+					toast.error($i18n.t('No content retrieved from Confluence. Please check your URL, Space Key, and credentials.'));
+				}
+			} catch (e) {
 				fileItems = fileItems.filter((item) => item.itemId !== fileItem.itemId);
 				toast.error(`${e}`);
 			}
@@ -798,6 +868,13 @@
 	}}
 />
 
+<AttachConfluenceModal
+	bind:show={showAddConfluenceModal}
+	onSubmit={async (e) => {
+		uploadConfluence(e.data);
+	}}
+/>
+
 <AddTextContentModal
 	bind:show={showAddTextContentModal}
 	on:submit={(e) => {
@@ -946,6 +1023,8 @@
 										showAddWebpageModal = true;
 									} else if (data.type === 'text') {
 										showAddTextContentModal = true;
+									} else if (data.type === 'confluence') {
+										showAddConfluenceModal = true;
 									} else {
 										document.getElementById('files-input').click();
 									}
